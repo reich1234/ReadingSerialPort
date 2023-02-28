@@ -47,7 +47,7 @@ public class CollectionMain {
         /* 初始化 */
         try {
             master.init();
-            readHoldingRegistersTest(master, SLAVE_ADDRESS, 0, 9);
+            readDiscreteInputTest(master, SLAVE_ADDRESS, 0, 20);
         } catch (ModbusInitException e) {
             e.printStackTrace();
         } finally {
@@ -80,17 +80,18 @@ public class CollectionMain {
         }
     }
 
-    private static void readDIscreteInput(ModbusMaster master, int slaveId, int start, int len) throws ModbusTransportException {
-        ReadDiscreteInputsRequest request = new ReadDiscreteInputsRequest(slaveId, start, len);
-        ReadDiscreteInputsResponse response = (ReadDiscreteInputsResponse) master.send(request);
-        if (response.isException()) {
-            System.out.println("Exception response: message=" + response.getExceptionMessage());
-        } else {
-            System.out.println(Arrays.toString(response.getBooleanData()));
-            boolean[] list = response.getBooleanData();
-            for (boolean b : list) {
-                System.out.print(b + " ");
-            }
+    public static void readDiscreteInputTest(ModbusMaster master, int slaveId, int start, int len) {
+        try {
+            ReadDiscreteInputsRequest request = new ReadDiscreteInputsRequest(slaveId, start, len);
+            ReadDiscreteInputsResponse response = (ReadDiscreteInputsResponse) master.send(request);
+
+            if (response.isException())
+                System.out.println("Exception response: message=" + response.getExceptionMessage());
+            else
+                System.out.println(Arrays.toString(response.getBooleanData()));
+        }
+        catch (ModbusTransportException e) {
+            e.printStackTrace();
         }
     }
 
