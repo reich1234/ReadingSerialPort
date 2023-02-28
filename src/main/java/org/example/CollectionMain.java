@@ -5,6 +5,8 @@ import com.serotonin.modbus4j.ModbusFactory;
 import com.serotonin.modbus4j.ModbusMaster;
 import com.serotonin.modbus4j.exception.ModbusInitException;
 import com.serotonin.modbus4j.exception.ModbusTransportException;
+import com.serotonin.modbus4j.msg.ReadDiscreteInputsRequest;
+import com.serotonin.modbus4j.msg.ReadDiscreteInputsResponse;
 import com.serotonin.modbus4j.msg.ReadHoldingRegistersRequest;
 import com.serotonin.modbus4j.msg.ReadHoldingRegistersResponse;
 import com.serotonin.modbus4j.serial.SerialPortWrapper;
@@ -17,11 +19,27 @@ public class CollectionMain {
     // 设定MODBUS网络上从站地址
     private final static int SLAVE_ADDRESS = 1;
     //串行波特率
-    private final static int BAUD_RATE = 9600;
+    private final static int BAUD_RATE = 115200;
 
     public static void main(String[] args) {
+//        SerialPortWrapper serialParameters = new
+//                SerialPortWrapperImpl("/dev/ttyS2", BAUD_RATE, 8, 1, 0, 0, 0);
+//        /* 创建ModbusFactory工厂实例 */
+//        ModbusFactory modbusFactory = new ModbusFactory();
+//        /* 创建ModbusMaster实例 */
+//        ModbusMaster master = modbusFactory.createRtuMaster(serialParameters);
+//        /* 初始化 */
+//        try {
+//            master.init();
+//            readHoldingRegistersTest(master, SLAVE_ADDRESS, 256, 1);
+//        } catch (ModbusInitException e) {
+//            e.printStackTrace();
+//        } finally {
+//            master.destroy();
+//        }
+
         SerialPortWrapper serialParameters = new
-                SerialPortWrapperImpl("/dev/ttyS2", BAUD_RATE, 8, 1, 0, 0, 0);
+                SerialPortWrapperImpl("/dev/ttyS0", BAUD_RATE, 8, 1, 0, 0, 0);
         /* 创建ModbusFactory工厂实例 */
         ModbusFactory modbusFactory = new ModbusFactory();
         /* 创建ModbusMaster实例 */
@@ -29,7 +47,7 @@ public class CollectionMain {
         /* 初始化 */
         try {
             master.init();
-            readHoldingRegistersTest(master, SLAVE_ADDRESS, 256, 1);
+            readHoldingRegistersTest(master, SLAVE_ADDRESS, 0, 9);
         } catch (ModbusInitException e) {
             e.printStackTrace();
         } finally {
@@ -61,5 +79,20 @@ public class CollectionMain {
             e.printStackTrace();
         }
     }
+
+    private static void readDIscreteInput(ModbusMaster master, int slaveId, int start, int len) throws ModbusTransportException {
+        ReadDiscreteInputsRequest request = new ReadDiscreteInputsRequest(slaveId, start, len);
+        ReadDiscreteInputsResponse response = (ReadDiscreteInputsResponse) master.send(request);
+        if (response.isException()) {
+            System.out.println("Exception response: message=" + response.getExceptionMessage());
+        } else {
+            System.out.println(Arrays.toString(response.getBooleanData()));
+            boolean[] list = response.getBooleanData();
+            for (boolean b : list) {
+                System.out.print(b + " ");
+            }
+        }
+    }
+
 }
 
