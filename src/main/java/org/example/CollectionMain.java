@@ -84,15 +84,14 @@ public class CollectionMain {
         try {
             ReadDiscreteInputsRequest request = new ReadDiscreteInputsRequest(slaveId, start, len);
             ReadDiscreteInputsResponse response = (ReadDiscreteInputsResponse) master.send(request);
+            boolean[] list = response.getBooleanData();
+            for (int i = 0; i < list.length; i++) {
+                System.out.print(list[i] + " ");
+            }
+        } catch (ModbusTransportException e) {
+            throw new RuntimeException(e);
+        }
 
-            if (response.isException())
-                System.out.println("Exception response: message=" + response.getExceptionMessage());
-            else
-                System.out.println(Arrays.toString(response.getBooleanData()));
-        }
-        catch (ModbusTransportException e) {
-            e.printStackTrace();
-        }
     }
 
 }
