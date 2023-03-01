@@ -3,13 +3,14 @@ package org.example;
 import java.util.Arrays;
 import com.serotonin.modbus4j.ModbusFactory;
 import com.serotonin.modbus4j.ModbusMaster;
+import com.serotonin.modbus4j.ProcessImage;
 import com.serotonin.modbus4j.exception.ModbusInitException;
 import com.serotonin.modbus4j.exception.ModbusTransportException;
-import com.serotonin.modbus4j.msg.ReadDiscreteInputsRequest;
-import com.serotonin.modbus4j.msg.ReadDiscreteInputsResponse;
-import com.serotonin.modbus4j.msg.ReadHoldingRegistersRequest;
-import com.serotonin.modbus4j.msg.ReadHoldingRegistersResponse;
+import com.serotonin.modbus4j.msg.*;
 import com.serotonin.modbus4j.serial.SerialPortWrapper;
+import org.example.SerialPortWrapperImpl;
+
+import static com.serotonin.modbus4j.serial.SerialPortWrapper.*;
 
 /**
  * 通过串口解析MODBUS协议
@@ -39,7 +40,7 @@ public class CollectionMain {
 //        }
 
         SerialPortWrapper serialParameters = new
-                SerialPortWrapperImpl("/dev/ttyS0", BAUD_RATE, 8, 1, 0, 0, 0);
+                SerialPortWrapperImpl("/dev/ttyS0", BAUD_RATE, 8, 1, 1, 0, 0);
         /* 创建ModbusFactory工厂实例 */
         ModbusFactory modbusFactory = new ModbusFactory();
         /* 创建ModbusMaster实例 */
@@ -47,7 +48,9 @@ public class CollectionMain {
         /* 初始化 */
         try {
             master.init();
-            readDiscreteInputTest(master, SLAVE_ADDRESS, 0, 20);
+            //readDiscreteInputTest(master, SLAVE_ADDRESS, 0, 20);
+            readCoil(master,SLAVE_ADDRESS, 0, 20);
+            //readHoldingRegistersTest(master, SLAVE_ADDRESS, 256, 1);
         } catch (ModbusInitException e) {
             e.printStackTrace();
         } finally {
@@ -82,9 +85,34 @@ public class CollectionMain {
 
     public static void readDiscreteInputTest(ModbusMaster master, int slaveId, int start, int len) {
         try {
+
             ReadDiscreteInputsRequest request = new ReadDiscreteInputsRequest(slaveId, start, len);
+            byte list2 = request.getFunctionCode();
+            System.out.println(list2);
+            // how to get response from ReadDecreteInputsRequest with this library?
             ReadDiscreteInputsResponse response = (ReadDiscreteInputsResponse) master.send(request);
             boolean[] list = response.getBooleanData();
+
+            for (int i = 0; i < list.length; i++) {
+                System.out.print(list[i] + " ");
+            }
+        } catch (ModbusTransportException e) {
+            throw new RuntimeException(e);
+        }
+
+    }
+
+    public static void readCoil(ModbusMaster master, int slaveId, int start, int len) {
+        try {
+
+            ReadCoilsRequest request = new ReadCoilsRequest(slaveId, start, len);
+            byte list2 = request.getFunctionCode();
+            System.out.println(list2);
+            // how to get response from ReadDecreteInputsRequest with this library?
+            ReadCoilsResponse response = (ReadCoilsResponse) master.send(request);
+
+            boolean[] list = response.getBooleanData();
+
             for (int i = 0; i < list.length; i++) {
                 System.out.print(list[i] + " ");
             }
@@ -95,4 +123,3 @@ public class CollectionMain {
     }
 
 }
-
