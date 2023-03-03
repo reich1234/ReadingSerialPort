@@ -3,7 +3,10 @@ package org.example;
 import java.util.Arrays;
 import com.serotonin.modbus4j.ModbusFactory;
 import com.serotonin.modbus4j.ModbusMaster;
+import com.serotonin.modbus4j.code.DataType;
 import com.serotonin.modbus4j.ProcessImage;
+import com.serotonin.modbus4j.locator.NumericLocator;
+import com.serotonin.modbus4j.code.RegisterRange;
 import com.serotonin.modbus4j.exception.ModbusInitException;
 import com.serotonin.modbus4j.exception.ModbusTransportException;
 import com.serotonin.modbus4j.msg.*;
@@ -40,7 +43,7 @@ public class CollectionMain {
 //        }
 
         SerialPortWrapper serialParameters = new
-                SerialPortWrapperImpl("/dev/ttyS0", BAUD_RATE, 8, 1, 1, 0, 0);
+                SerialPortWrapperImpl("/dev/ttyS2", BAUD_RATE, 8, 1, 0, 0, 0);
         /* 创建ModbusFactory工厂实例 */
         ModbusFactory modbusFactory = new ModbusFactory();
         /* 创建ModbusMaster实例 */
@@ -49,8 +52,8 @@ public class CollectionMain {
         try {
             master.init();
             //readDiscreteInputTest(master, SLAVE_ADDRESS, 0, 20);
-            readCoil(master,SLAVE_ADDRESS, 0, 20);
-            //readHoldingRegistersTest(master, SLAVE_ADDRESS, 256, 1);
+            //readCoil(master,SLAVE_ADDRESS, 0, 20);
+            readHoldingRegistersTest(master, SLAVE_ADDRESS, 256, 1);
         } catch (ModbusInitException e) {
             e.printStackTrace();
         } finally {
@@ -65,18 +68,23 @@ public class CollectionMain {
      * @param start 起始地址的偏移量
      * @param len 待读寄存器的个数
      */
-    private static void readHoldingRegistersTest(ModbusMaster master, int slaveId, int start, int len) {
+    public static void readHoldingRegistersTest(ModbusMaster master, int slaveId, int start, int len) {
         try {
+
+
+
             ReadHoldingRegistersRequest request = new ReadHoldingRegistersRequest(slaveId, start, len);
             ReadHoldingRegistersResponse response = (ReadHoldingRegistersResponse)master.send(request);
+            NumericLocator locator = new NumericLocator(
+                    slaveId, RegisterRange.HOLDING_REGISTER, start, DataType.FOUR_BYTE_FLOAT);
             if (response.isException()) {
                 System.out.println("Exception response: message=" + response.getExceptionMessage());
             } else {
-                System.out.println(Arrays.toString(response.getShortData()));
-                short[] list = response.getShortData();
-                for (int i = 0; i < list.length; i++) {
-                    System.out.print(list[i] + " ");
-                }
+
+                byte[] list = response.getData();
+                Number result = locator.bytesToValue(list, len);
+                System.out.print(result);
+
             }
         } catch (ModbusTransportException e) {
             e.printStackTrace();
